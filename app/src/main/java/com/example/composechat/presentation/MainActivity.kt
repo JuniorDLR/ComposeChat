@@ -1,4 +1,4 @@
-package com.example.composechat
+package com.example.composechat.presentation
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -12,7 +12,6 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             ComposeChatTheme {
-
             }
         }
     }
