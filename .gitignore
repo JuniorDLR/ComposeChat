@@ -27,5 +27,11 @@ app/google-services.json
 zip-cache/
 **/zip-cache/
 
+# Mac
+.DS_Store
+
 # Windows
 Thumbs.db
+
+# Kotlin cache
+.kotlin/
