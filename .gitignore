@@ -1,17 +1,31 @@
+# Android/IntelliJ
 *.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
+.gradle/
 local.properties
+/.idea/
+/.idea/*
+.DS_Store
+
+# Build
+/build/
+/app/build/
+/captures/
+/externalNativeBuild/
+/cxx/
+/app/.cxx/
+/app/captures/
+/app/intermediates/
+/app/generated/
+/app/.gradle/
+/app/.idea/
+/app/.DS_Store
+
 # Firebase
 app/google-services.json
+
+# Gradle/Build cache
+zip-cache/
+**/zip-cache/
+
+# Windows
+Thumbs.db

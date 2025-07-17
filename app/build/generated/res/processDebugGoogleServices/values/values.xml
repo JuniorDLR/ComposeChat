@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="gcm_defaultSenderId" translatable="false">584015618660</string>
-    <string name="google_api_key" translatable="false">AIzaSyAl4tut2h1b5OMwY6LqTzeiGPWHgZy4cdY</string>
-    <string name="google_app_id" translatable="false">1:584015618660:android:03800200c1c748d32f3571</string>
-    <string name="google_crash_reporting_api_key" translatable="false">AIzaSyAl4tut2h1b5OMwY6LqTzeiGPWHgZy4cdY</string>
-    <string name="google_storage_bucket" translatable="false">composechat-c9c56.firebasestorage.app</string>
-    <string name="project_id" translatable="false">composechat-c9c56</string>
-</resources>

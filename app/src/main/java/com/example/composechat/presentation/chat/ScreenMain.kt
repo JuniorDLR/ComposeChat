@@ -16,17 +16,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.composechat.R
 
-@Preview(showBackground = true, showSystemUi = true)
 @Composable
-fun ScreenMain() {
+fun ScreenMain(onClick: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -36,22 +33,21 @@ fun ScreenMain() {
     ) {
         ImageLogo()
         HeaderMain()
-        ButtonMain()
+        ButtonMain(onClick = onClick)
     }
 
 
 }
 
 @Composable
-fun ButtonMain() {
+fun ButtonMain(onClick: () -> Unit) {
     Button(
         colors = ButtonDefaults.buttonColors(
             containerColor = Color.Blue,
             contentColor = Color.White
         ),
-        onClick = {
-
-        }) {
+        onClick = onClick
+    ) {
         Text(text = "Iniciar conversación")
     }
 }
