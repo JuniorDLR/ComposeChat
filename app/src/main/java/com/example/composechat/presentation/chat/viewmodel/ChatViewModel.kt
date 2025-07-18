@@ -1,9 +1,10 @@
 package com.example.composechat.presentation.chat.viewmodel
 
 import androidx.lifecycle.ViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
+@HiltViewModel
+class ChatViewModel @Inject constructor() : ViewModel() {
 
-class ChatViewModel : ViewModel() {
-    // Aquí puedes agregar la lógica del chat
-    // Por ejemplo: mensajes, estado de conexión, etc.
 }
