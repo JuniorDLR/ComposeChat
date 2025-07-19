@@ -74,7 +74,7 @@ dependencies {
 
     //Hilt
     implementation(libs.hilt.android)
-    ksp(libs.hilt.android.compiler) // Changed kapt to ksp
+    ksp(libs.hilt.android.compiler)
 
     coreLibraryDesugaring(libs.desugar.jdk.libs)
     testImplementation(libs.junit)
