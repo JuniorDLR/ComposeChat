@@ -4,15 +4,15 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.composechat.presentation.chat.ChatMain
 import com.example.composechat.presentation.chat.ScreenMain
-import com.example.composechat.presentation.chat.viewmodel.ChatViewModel
 import com.example.composechat.presentation.route.Chat
 import com.example.composechat.presentation.route.Home
+import com.example.composechat.presentation.viewmodel.MainViewModel
 import com.example.composechat.ui.theme.ComposeChatTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -23,31 +23,20 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-
         setContent {
-            val chatViewModel: ChatViewModel = viewModel()
             ComposeChatTheme {
-
                 val navController = rememberNavController()
+                val mainViewModel: MainViewModel = hiltViewModel()
 
                 NavHost(
                     navController = navController,
                     startDestination = Home
                 ) {
                     composable<Home> {
-                        ScreenMain(
-                            onClick = {
-                                navController.navigate(route = Chat)
-                            }
-                        )
+                        ScreenMain(navController = navController, viewModel = mainViewModel)
                     }
                     composable<Chat> {
-                        ChatMain(
-                            chatViewModel=chatViewModel,
-                            onBackPressed = {
-                                navController.popBackStack()
-                            }
-                        )
+                        ChatMain(navController = navController, mainViewModel = mainViewModel)
                     }
                 }
             }

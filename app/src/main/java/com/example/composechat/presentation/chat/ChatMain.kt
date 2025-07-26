@@ -1,165 +1,222 @@
 package com.example.composechat.presentation.chat
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.filled.Send
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.example.composechat.domain.dto.MessageDomain
-import com.example.composechat.domain.dto.MessageResponseModel
 import com.example.composechat.domain.dto.UserDomain
-import com.example.composechat.presentation.chat.viewmodel.ChatViewModel
-
+import com.example.composechat.presentation.viewmodel.MainViewModel
 
 @Composable
 fun ChatMain(
-    onBackPressed: () -> Unit = {},
-    chatViewModel: ChatViewModel
+    mainViewModel: MainViewModel = hiltViewModel(),
+    navController: NavController
 ) {
-    val messageObserve by chatViewModel.chatUIState.collectAsState()
+    val mainUIState by mainViewModel.mainUIState.collectAsState()
+    val listState = rememberLazyListState()
+    
+    // Auto-scroll to bottom when new messages arrive
+    LaunchedEffect(mainUIState.chatUIState.messageResponse.size) {
+        if (mainUIState.chatUIState.messageResponse.isNotEmpty()) {
+            listState.animateScrollToItem(mainUIState.chatUIState.messageResponse.size - 1)
+        }
+    }
+
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        topBar = { TopAppChat(onBackPressed = onBackPressed) },
+        topBar = {
+            TopAppChat(
+                username = mainUIState.nickNameUIState.getName,
+                onBackPressed = {
+                    navController.popBackStack()
+                },
+                onLogout = {
+                    mainViewModel.logout()
+                    navController.popBackStack()
+                }
+            )
+        },
         bottomBar = {
             MessageInputBar(
-                value = messageObserve.messageState,
-                chatViewModel = chatViewModel,
+                value = mainUIState.chatUIState.messageState,
+                mainViewModel = mainViewModel,
                 onSendMessage = { message ->
                     val messageDomain = MessageDomain(
                         message = message,
                         user = UserDomain(
-                            userName = "junior",
-                            admin = true
+                            userName = mainUIState.nickNameUIState.getName,
+                            admin = false
                         )
                     )
-                    chatViewModel.sendMessage(messageDomain = messageDomain)
-                })
+                    mainViewModel.sendMessage(messageDomain = messageDomain)
+                }
+            )
         },
-        containerColor = Color.White,
+        containerColor = Color(0xFFF5F5F5),
         contentColor = Color.Black,
     ) { paddingValues ->
         BodyChat(
             paddingValues = paddingValues,
-            messages = messageObserve.messageResponse,
+            messages = mainUIState.chatUIState.messageResponse,
+            currentUser = mainUIState.chatUIState.currentUser,
+            listState = listState
         )
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TopAppChat(
+    username: String,
+    onBackPressed: () -> Unit,
+    onLogout: () -> Unit
+) {
+    TopAppBar(
+        title = {
+            Column {
+                Text(
+                    text = "ComposeChat",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp
+                )
+                Text(
+                    text = "Conectado como: $username",
+                    fontSize = 12.sp,
+                    color = Color.Gray
+                )
+            }
+        },
+        navigationIcon = {
+            IconButton(onClick = onBackPressed) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
+            }
+        },
+        actions = {
+            IconButton(onClick = onLogout) {
+                Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = "Cerrar sesión")
+            }
+        },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = Color.White,
+            titleContentColor = Color.Black,
+            navigationIconContentColor = Color.Black,
+            actionIconContentColor = Color.Black
+        )
+    )
 }
 
 @Composable
 fun BodyChat(
     paddingValues: PaddingValues,
-    messages: List<MessageResponseModel>
+    messages: List<com.example.composechat.domain.dto.MessageResponseModel>,
+    currentUser: String,
+    listState: androidx.compose.foundation.lazy.LazyListState
 ) {
-
-    val listState = rememberLazyListState()
     LazyColumn(
-        state = listState,
         modifier = Modifier
             .fillMaxSize()
-            .padding(vertical = 16.dp)
             .padding(paddingValues)
-            .imePadding()
+            .padding(horizontal = 8.dp)
+            .imePadding() ,
+        state = listState,
+        verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        items(items = messages) { message ->
-            ChatMessageBubbleResponse(
-                message = message,
-            )
+        if (messages.isEmpty()) {
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(32.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "¡Inicia la conversación!",
+                        color = Color.Gray,
+                        fontSize = 16.sp
+                    )
+                }
+            }
+        } else {
+            items(messages) { message ->
+                ChatMessageBubbleResponse(
+                    message = message,
+                    currentUser = currentUser
+                )
+            }
         }
-    }
-    LaunchedEffect(key1 = messages.size) {
-        listState.animateScrollToItem(index = messages.size - 1)
-
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun TopAppChat(onBackPressed: () -> Unit = {}) {
-    TopAppBar(
-        title = { Text(text = "Bienvenido Junior") },
-        modifier = Modifier.fillMaxWidth(),
-        navigationIcon = {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = "Back",
-                modifier = Modifier.clickable(onClick = onBackPressed)
-            )
-        }
-    )
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MessageInputBar(
-    onSendMessage: (String) -> Unit,
-    chatViewModel: ChatViewModel,
-    value: String
+    value: String,
+    mainViewModel: MainViewModel,
+    onSendMessage: (String) -> Unit
 ) {
-
+    var messageText by remember { mutableStateOf(value) }
+    
+    LaunchedEffect(value) {
+        messageText = value
+    }
 
     Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .navigationBarsPadding(),
+        modifier = Modifier.fillMaxWidth(),
+        color = Color.White,
         shadowElevation = 8.dp
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 4.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .padding(16.dp),
+            verticalAlignment = Alignment.Bottom
         ) {
             OutlinedTextField(
-                value = value,
-                onValueChange = { newValue ->
-                    chatViewModel.updateMessageObserved(newValue = newValue)
+                value = messageText,
+                onValueChange = { 
+                    messageText = it
+                    mainViewModel.updateMessageObserved(it)
                 },
-                placeholder = { Text("Escribe un mensaje...") },
                 modifier = Modifier.weight(1f),
-                maxLines = 3
+                placeholder = { Text("Escribe un mensaje...") },
+                maxLines = 4,
+                shape = RoundedCornerShape(24.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color.Blue,
+                    unfocusedBorderColor = Color.Gray
+                )
             )
+            
             Spacer(modifier = Modifier.width(8.dp))
-            IconButton(
+            
+            FloatingActionButton(
                 onClick = {
-                    if (value.isNotBlank()) {
-                        onSendMessage(value)
+                    if (messageText.isNotEmpty()) {
+                        onSendMessage(messageText)
+                        messageText = ""
+                        mainViewModel.updateMessageObserved("")
                     }
                 },
-                enabled = value.isNotBlank()
+                containerColor = Color.Blue,
+                contentColor = Color.White,
+                modifier = Modifier.size(48.dp)
             ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.Send,
-                    contentDescription = "Enviar mensaje",
-                    tint = MaterialTheme.colorScheme.primary
-                )
+                Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Enviar")
             }
         }
     }
